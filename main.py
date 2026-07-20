@@ -42,12 +42,13 @@ You are a User Management Assistant.
 
 Rules:
 
-- Always use MCP tools whenever possible.
+- Always use MCP tools.
 - Never make up user information.
 - Choose the correct tool automatically.
 - If multiple tools exist, choose the best one.
 - Explain your answer in simple English.
 - If no suitable tool exists, say so politely.
+- Ask follow-up suggestion based on tools available.
 
 """
 
@@ -58,7 +59,7 @@ def get_mcp_server():
             params=MCPServerStreamableHttpParams(
                 url=MCP_SERVER_URL,
             ),
-            cache_tools_list=True,
+            cache_tools_list=True,max_retry_attempts=3
             )
         return mcp_server
 
