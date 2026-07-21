@@ -3,7 +3,7 @@ import logging
 import os
 import math
 
-from agents import Agent, Runner, ModelSettings
+from agents import Agent, Runner, ModelSettings, AgentsException, ToolTimeoutError
 from agents.mcp import (
     MCPServerStreamableHttp,
     MCPServerStreamableHttpParams,
@@ -29,7 +29,7 @@ if not OPENAI_API_KEY:
 
 
 MODEL = os.getenv("MODEL", "gpt-4o-mini")
-MODEL_TEMPERATURE=os.getenv("MODEL_TEMPERATURE", "0.2")
+MODEL_TEMPERATURE = os.getenv("MODEL_TEMPERATURE", "0.2")
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL")
 MCP_SERVER_NAME = os.getenv("MCP_SERVER_NAME")
 # -------------------------------------------------
@@ -55,24 +55,25 @@ Rules:
 
 """
 
+
 def get_mcp_server():
-        logger.info("Connecting to MCP server...")
-        mcp_server = MCPServerStreamableHttp(
-            name="User Management MCP",
-            params=MCPServerStreamableHttpParams(
-                url=MCP_SERVER_URL,
-            ),
-            cache_tools_list=True,
-            max_retry_attempts=3,
-            client_session_timeout_seconds=120,
-            )
-        return mcp_server
+    logger.info("Connecting to MCP server...")
+    mcp_server = MCPServerStreamableHttp(
+        name="User Management MCP",
+        params=MCPServerStreamableHttpParams(
+            url=MCP_SERVER_URL,
+        ),
+        cache_tools_list=True,
+        max_retry_attempts=3,
+        client_session_timeout_seconds=120,
+    )
+    return mcp_server
 
 
 async def main():
 
     try:
-        mcp_server=get_mcp_server()
+        mcp_server = get_mcp_server()
         async with mcp_server:
             logger.info("Connected successfully.")
             logger.info("=" * 50)
@@ -80,17 +81,14 @@ async def main():
             logger.info("=" * 50)
             logger.info("Type 'exit' to quit.\n")
 
-            model_setting=ModelSettings(
-                temperature=MODEL_TEMPERATURE,
-                top_logprobs=5
-            )
+            model_setting = ModelSettings(temperature=MODEL_TEMPERATURE, top_logprobs=5)
 
             agent = Agent(
                 name="User Management Assistant.",
                 model=MODEL,
                 instructions=SYSTEM_PROMPT,
                 mcp_servers=[mcp_server],
-                model_settings=model_setting
+                model_settings=model_setting,
             )
             while True:
                 question = input("\nYou: ")
@@ -98,13 +96,27 @@ async def main():
                     break
                 logger.info("Running Agent...")
                 result = await Runner.run(agent, question)
-                last_message=result.final_output
+                last_message = result.final_output
                 print("\nAssistant:")
                 print(last_message)
 
+    except AgentsException as ex:
+        logger.exception(str(ex))
+        if ex.run_data:
+            logger.exception("Last agent:", ex.run_data.last_agent.name)
+            logger.exception("Raw responses:", ex.run_data.raw_responses)
+            logger.exception("New items:", ex.run_data.new_items)
+
+    except ToolTimeoutError as ex:
+        logger.exception(ex.tool_name)
+        logger.exception(ex.timeout_seconds)
+        logger.exception(str(ex))
+
     except Exception as ex:
         logger.exception("Something went wrong!")
+        logger.exception(type(ex).__name__)
         logger.exception(ex)
+
 
 async def show_available_tools():
     """
@@ -112,7 +124,7 @@ async def show_available_tools():
     """
     try:
         logger.info("Fetching available tools...")
-        mcp_server=get_mcp_server()
+        mcp_server = get_mcp_server()
         async with mcp_server:
             tools = await mcp_server.list_tools()
         if not tools:
@@ -131,7 +143,9 @@ async def show_available_tools():
         print("=" * 60)
 
     except Exception as ex:
-        logger.exception(f"Unable to fetch tools: {ex}")
+        logger.exception(f"Unable to fetch tools.")
+        logger.exception(ex)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
