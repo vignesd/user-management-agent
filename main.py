@@ -1,9 +1,9 @@
 import asyncio
 import logging
 import os
-import json
+import math
 
-from agents import Agent, Runner
+from agents import Agent, Runner, ModelSettings
 from agents.mcp import (
     MCPServerStreamableHttp,
     MCPServerStreamableHttpParams,
@@ -28,14 +28,15 @@ if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY environment variable is not set.")
 
 
-MODEL = os.getenv("MODEL", "gpt-5.5")
+MODEL = os.getenv("MODEL", "gpt-4o-mini")
+MODEL_TEMPERATURE=os.getenv("MODEL_TEMPERATURE", "0.2")
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL")
 MCP_SERVER_NAME = os.getenv("MCP_SERVER_NAME")
 # -------------------------------------------------
 # Configure Logging
 # -------------------------------------------------
 logger.info(
-    f"Model - {MODEL}\nMCP Server URL - {MCP_SERVER_URL}\nMCP Server Name - {MCP_SERVER_NAME}"
+    f"Model - {MODEL}\nModel Temperature - {MODEL_TEMPERATURE}\nMCP Server URL - {MCP_SERVER_URL}\nMCP Server Name - {MCP_SERVER_NAME}"
 )
 
 SYSTEM_PROMPT = """
@@ -51,6 +52,7 @@ Rules:
 - If no suitable tool exists, say so politely.
 - Ask follow-up suggestion based on tools available.
 
+
 """
 
 def get_mcp_server():
@@ -60,7 +62,9 @@ def get_mcp_server():
             params=MCPServerStreamableHttpParams(
                 url=MCP_SERVER_URL,
             ),
-            cache_tools_list=True,max_retry_attempts=3
+            cache_tools_list=True,
+            max_retry_attempts=3,
+            client_session_timeout_seconds=120,
             )
         return mcp_server
 
@@ -76,11 +80,17 @@ async def main():
             logger.info("=" * 50)
             logger.info("Type 'exit' to quit.\n")
 
+            model_setting=ModelSettings(
+                temperature=MODEL_TEMPERATURE,
+                top_logprobs=5
+            )
+
             agent = Agent(
-                name="User Assistant",
+                name="User Management Assistant.",
                 model=MODEL,
                 instructions=SYSTEM_PROMPT,
                 mcp_servers=[mcp_server],
+                model_settings=model_setting
             )
             while True:
                 question = input("\nYou: ")
@@ -88,8 +98,9 @@ async def main():
                     break
                 logger.info("Running Agent...")
                 result = await Runner.run(agent, question)
+                last_message=result.final_output
                 print("\nAssistant:")
-                print(result.final_output)
+                print(last_message)
 
     except Exception as ex:
         logger.exception("Something went wrong!")

@@ -1,0 +1,180 @@
+1. read_user_by_login_id
+   Description : 
+    Fetch one user record by LoginID.
+
+    Input:
+    - login_id: Unique LoginID assigned at creation time.
+
+    Returns:
+    - users: list with the matching record, or an empty list
+    
+   Input Schema: {
+    'properties': 
+    {
+        'login_id': {'title': 'Login Id', 'type': 'string'}
+    }, 
+    'required': ['login_id'], 
+    'title': 'read_user_by_login_idArguments', 
+    'type': 'object'
+    }
+
+2. read_user_by_email
+   Description : 
+    Fetch one user record by email address.
+
+    Behavior:
+    - Case-insensitive lookup.
+    - Useful when the LoginID is not yet known.
+
+    Returns:
+    - users: list with the matching record, or an empty list
+    
+   Input Schema: {'properties': {'email_id': {'title': 'Email Id', 'type': 'string'}}, 'required': ['email_id'], 'title': 'read_user_by_emailArguments', 'type': 'object'}
+
+3. list_all_users
+   Description : 
+    List all user records in the database.
+
+    Behavior:
+    - Returns both active and inactive users.
+    - Results are ordered by most recent creation time.
+    - The response is capped by the CRUD layer limit.
+    
+   Input Schema: {'properties': {}, 'title': 'list_all_usersArguments', 'type': 'object'}
+
+4. list_users_with_sorting
+   Description : 
+    List user records sorted by the specified column.
+
+    Behavior:
+    - Sorts users by the specified column.
+    - Supports ascending or descending order.
+    - Limits the number of returned records.
+    - Returns an empty list if no matching records are found.
+
+    Arguments:
+    - column_name: Column used for sorting.
+    - ascending: True for ascending order, False for descending order.
+    - limit: Maximum number of records to return.
+
+    Returns:
+    - users: list of user records
+
+    
+   Input Schema: {'properties': {'limit': {'default': 10, 'title': 'Limit', 'type': 'integer'}, 
+   'column_name': {'default': 'LoginID', 'title': 'Column Name', 'type': 'string'}, 
+   'is_ascending': {'default': True, 'title': 'Is Ascending', 'type': 'boolean'}}, 
+   'title': 'list_users_with_sortingArguments', 'type': 'object'}
+
+5. list_users_by_columns
+   Description : 
+    List user records with configurable response levels.
+
+    Behavior:
+    - Supports three response levels to control the amount of data returned.
+    - Limits the number of returned records.
+    - Returns an empty list if no matching records are found.
+
+    Response Levels:
+    - basic:
+        Returns only the most commonly used fields:
+        LoginID, FirstName, LastName, EmailID, Technology
+
+    - necessary:
+        Returns additional organizational information:
+        LoginID, FirstName, LastName, EmailID,
+        ManagerName, ManagerEmail,
+        Department, Technology,
+        TransitCode, IsActive
+
+    - all:
+    Returns every available column from the user record:
+        LoginID, FirstName, LastName, EmailID,
+        ManagerName, ManagerEmail,
+        Department, Technology,
+        TransitCode, Reference,
+        CreatedDate, UpdatedDate,
+        CreatedBy, UpdatedBy,
+        IsActive, Comments
+
+    Returns:
+    - users: list of user records based on the requested detail level
+
+    
+   Input Schema: {'properties': {'response_level': {'default': 'medium', 'enum': ['basic', 'medium', 'all'], 'title': 'Response Level', 'type': 'string'}}, 'title': 'list_users_by_columnsArguments', 'type': 'object'}
+
+6. list_users_by_status
+   Description : 
+    List users filtered by active status.
+
+    Input:
+    - is_active: True for active users, False for inactive users.
+
+    Returns:
+    - total_count: total matches in the database
+    - returned: number returned in this response
+    - users: matching user records
+    
+   Input Schema: {'properties': {'is_active': {'title': 'Is Active', 'type': 'boolean'}}, 'required': ['is_active'], 'title': 'list_users_by_statusArguments', 'type': 'object'}
+
+7. create_user
+   Description : 
+    Create a new user record.
+
+    Behavior:
+    - Generates a unique LoginID automatically.
+    - Rejects duplicate email addresses and returns the existing LoginID.
+    - Stores optional profile fields when provided.
+
+    Required fields:
+    - first_name
+    - last_name
+    - email_id
+    - created_by
+    - manager_name
+    - manager_email
+    - reference
+
+    Returns a dictionary with:
+    - status: created | exists | error
+    - message: human-readable result
+    - login_id: assigned LoginID when applicable
+    
+   Input Schema: {'properties': {'first_name': {'title': 'First Name', 'type': 'string'}, 'last_name': {'title': 'Last Name', 'type': 'string'}, 'email_id': {'title': 'Email Id', 'type': 'string'}, 'created_by': {'title': 'Created By', 'type': 'string'}, 'manager_name': {'title': 'Manager Name', 'type': 'string'}, 'manager_email': {'title': 'Manager Email', 'type': 'string'}, 'reference': {'title': 'Reference', 'type': 'string'}, 'department': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Department'}, 'technology': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Technology'}, 'transit_code': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Transit Code'}, 'comments': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Comments'}}, 'required': ['first_name', 'last_name', 'email_id', 'created_by', 'manager_name', 'manager_email', 'reference'], 'title': 'create_userArguments', 'type': 'object'}
+
+8. update_user
+   Description : 
+    Update mutable fields for an existing user.
+
+    Immutable fields:
+    - LoginID
+    - EmailID
+    - CreatedDate
+    - CreatedBy
+
+    Behavior:
+    - Only non-None fields are sent to the CRUD layer.
+    - Unknown fields are ignored by the CRUD layer.
+
+    Returns:
+    - status: updated | not_found | no_change | error
+    - message: result summary
+    - updated_fields: names of updated columns
+    - rejected_fields: names of ignored fields
+    
+   Input Schema: {'properties': {'login_id': {'title': 'Login Id', 'type': 'string'}, 'updated_by': {'title': 'Updated By', 'type': 'string'}, 'first_name': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'First Name'}, 'last_name': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Last Name'}, 'manager_name': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Manager Name'}, 'manager_email': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Manager Email'}, 'department': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Department'}, 'technology': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Technology'}, 'transit_code': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Transit Code'}, 'reference': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Reference'}, 'is_active': {'anyOf': [{'type': 'integer'}, {'type': 'null'}], 'default': None, 'title': 'Is Active'}, 'comments': {'anyOf': [{'type': 'string'}, {'type': 'null'}], 'default': None, 'title': 'Comments'}}, 'required': ['login_id', 'updated_by'], 'title': 'update_userArguments', 'type': 'object'}
+
+9. delete_user
+   Description : 
+    Soft-delete a user record.
+
+    Behavior:
+    - Sets IsActive to 0.
+    - Preserves the record for audit/history.
+    - Can be reversed later with update_user(is_active=1).
+
+    Returns:
+    - status: deleted | already_inactive | not_found | error
+    - message: result summary
+    
+   Input Schema: {'properties': {'login_id': {'title': 'Login Id', 'type': 'string'}, 'updated_by': {'title': 'Updated By', 'type': 'string'}}, 'required': ['login_id', 'updated_by'], 'title': 'delete_userArguments', 'type': 'object'}
