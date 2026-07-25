@@ -100,6 +100,7 @@ async def main():
                 print("\nAssistant:")
                 print(last_message)
 
+
     except AgentsException as ex:
         logger.exception(str(ex))
         if ex.run_data:
