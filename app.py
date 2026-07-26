@@ -12,6 +12,8 @@ st.title("🤖 User Management Assistant")
 
 # Chat history
 if "messages" not in st.session_state:
+
+    
     st.session_state.messages = []
 
 # Show previous conversation
