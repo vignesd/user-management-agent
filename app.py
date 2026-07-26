@@ -12,8 +12,6 @@ st.title("🤖 User Management Assistant")
 
 # Chat history
 if "messages" not in st.session_state:
-
-    
     st.session_state.messages = []
 
 # Show previous conversation
@@ -24,23 +22,18 @@ for msg in st.session_state.messages:
 
 # Input
 if prompt := st.chat_input("Ask something about users..."):
-
     st.session_state.messages.append(
         {
             "role": "user",
             "content": prompt,
         }
     )
-
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-
         with st.spinner("Running MCP Agent..."):
-
             response = asyncio.run(ask_agent(prompt))
-
         st.markdown(response)
 
     st.session_state.messages.append(
