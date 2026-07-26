@@ -1,12 +1,15 @@
 [project]
 name = "user-management-agent"
 version = "0.1.0"
-description = "OpenAI Agent with Remote MCP Server"
+description = "User management agent with OpenAI Agents, LangGraph, and MCP"
 requires-python = ">=3.11"
 
 dependencies = [
     "openai-agents",
+    "langchain>=0.3.0",
+    "langchain-openai>=0.3.0",
+    "langchain-mcp-adapters>=0.3.0",
+    "langgraph>=0.4.0",
     "python-dotenv",
     "streamlit>=1.60.0",
-    "streamlit-chat>=0.1.1",
 ]

@@ -1,21 +1,47 @@
 # User Management Agent
 
-An OpenAI Agents SDK project that connects to a remote MCP server for user-management tasks. The agent is designed to answer questions by calling MCP tools rather than inventing user data.
+An agent project that connects to a remote MCP server for user-management tasks. The agents are designed to answer questions by calling MCP tools rather than inventing user data.
 
-## What Is In This Repo
+## Project Structure
 
-- `main.py` - command-line chat loop for talking to the agent
-- `app.py` - Streamlit UI for a simple browser-based chat experience
-- `agent.py` - shared agent setup used by the Streamlit app
+```text
+user-management-agent/
+├─ user_management_agent/
+│  ├─ __init__.py
+│  ├─ config.py
+│  ├─ prompts.py
+│  ├─ mcp.py
+│  ├─ openai_agent.py
+│  ├─ langgraph_agent.py
+│  ├─ streamlit_app.py
+│  ├─ cli_openai.py
+│  └─ cli_langgraph.py
+├─ app.py
+├─ main.py
+├─ agent_openai.py
+├─ agent_langgrap.py
+├─ demo.py
+├─ tools_schema.txt
+├─ pyproject.toml
+├─ uv.lock
+└─ README.md
+```
+
+- `user_management_agent/` - main Python package
+- `app.py` - compatibility wrapper for the Streamlit app
+- `main.py` - compatibility wrapper for the OpenAI CLI
+- `agent_openai.py` - compatibility wrapper for the OpenAI agent module
+- `agent_langgrap.py` - compatibility wrapper for the LangGraph agent module
 - `demo.py` - standalone OpenAI chat demo, separate from the MCP agent flow
-- `tools_schema.txt` - exported tool schema/reference for the MCP server
+- `tools_schema.txt` - exported tool schema reference for the MCP server
 
 ## Features
 
-- Uses the OpenAI Agents SDK
-- Connects to a remote MCP server over Streamable HTTP
-- Uses environment variables for configuration
-- Supports both CLI and Streamlit interfaces
+- OpenAI Agents SDK support
+- LangChain and LangGraph support
+- Remote MCP server integration over Streamable HTTP
+- Environment-based configuration
+- CLI and Streamlit entry points
 
 ## Requirements
 
@@ -25,7 +51,7 @@ An OpenAI Agents SDK project that connects to a remote MCP server for user-manag
 
 ## Setup
 
-Create and activate your environment, then install dependencies:
+Install dependencies:
 
 ```bash
 uv sync
@@ -45,19 +71,23 @@ Notes:
 
 - `OPENAI_API_KEY` is required
 - `MCP_SERVER_URL` is required for the agent to connect to tools
-- `MCP_SERVER_NAME` is optional and used only for logging in `main.py`
+- `MCP_SERVER_NAME` is optional and used for logging and the LangGraph MCP client
 - `MODEL` defaults to `gpt-4o-mini` if omitted
-- `MODEL_TEMPERATURE` defaults to `0.2` in the agent entry points
+- `MODEL_TEMPERATURE` defaults to `0.2`
 
 ## Run
 
-### CLI chat
+### LangGraph CLI
 
 ```bash
-uv run python main.py
+uv run python -m user_management_agent.langgraph_agent
 ```
 
-Type your question at the prompt. Enter `exit` to quit.
+### OpenAI Agents CLI
+
+```bash
+uv run python -m user_management_agent.openai_agent
+```
 
 ### Streamlit app
 
@@ -65,7 +95,13 @@ Type your question at the prompt. Enter `exit` to quit.
 uv run streamlit run app.py
 ```
 
-This opens a browser-based chat interface with conversation history.
+### Compatibility wrappers
+
+```bash
+uv run python main.py
+uv run python agent_openai.py
+uv run python agent_langgrap.py
+```
 
 ## How It Works
 
@@ -74,7 +110,7 @@ This opens a browser-based chat interface with conversation history.
 3. The agent selects the best available MCP tool.
 4. The tool result is returned in simple English.
 
-The system prompt explicitly tells the agent to:
+The shared system prompt tells the agent to:
 
 - always use MCP tools
 - avoid making up user information
