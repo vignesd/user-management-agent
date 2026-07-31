@@ -1,13 +1,54 @@
-# Python-generated files
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+
+# Python bytecode and caches
 __pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+*.py[cod]
+*.pyd
+*.so
+.python-version
 
 # Virtual environments
-.venv
-.environments
-.env
-*.pyc
+.venv/
+venv/
+env/
+ENV/
+.environments/
+
+# Build and packaging outputs
+build/
+dist/
+site/
+wheelhouse/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Test, type, and lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+
+# Tooling and notebooks
+.ipynb_checkpoints/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Application/runtime logs
+*.log
