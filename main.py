@@ -1,4 +1,6 @@
-"""OpenAI Agents CLI entry point."""
+"""OpenAI Agents CLI entry point.
+Check User Managenment agent folder for full code
+"""
 
 import asyncio
 
