@@ -15,3 +15,7 @@ MODEL_TEMPERATURE = float(os.getenv("MODEL_TEMPERATURE", "0.2"))
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL")
 MCP_SERVER_NAME = os.getenv("MCP_SERVER_NAME", "User Management MCP")
 
+print(f"Using model: {MODEL} with temperature: {MODEL_TEMPERATURE}")
+print(f"MCP Server URL: {MCP_SERVER_URL}")
+print(f"MCP Server Name: {MCP_SERVER_NAME}")
+
