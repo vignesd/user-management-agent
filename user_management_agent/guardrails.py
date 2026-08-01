@@ -49,7 +49,9 @@ agent = Agent(
 
 async def main() -> None:
     try:
-        await Runner.run(agent, "Can you solve 2x + 3 = 11 for me?")
+        question = "Can you solve 2x + 3 = 11 for me?"
+        question = "Can you help to restart the laptop for me?"
+        await Runner.run(agent, question)
     except InputGuardrailTripwireTriggered:
         print("Guardrail blocked the request.")
 
