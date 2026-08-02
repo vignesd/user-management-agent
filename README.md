@@ -6,25 +6,27 @@ An agent project that connects to a remote MCP server for user-management tasks.
 
 ```text
 user-management-agent/
-├─ user_management_agent/
-│  ├─ __init__.py
-│  ├─ config.py
-│  ├─ prompts.py
-│  ├─ mcp.py
-│  ├─ openai_agent.py
-│  ├─ langgraph_agent.py
-│  ├─ streamlit_app.py
-│  ├─ cli_openai.py
-│  └─ cli_langgraph.py
-├─ app.py
-├─ main.py
-├─ agent_openai.py
-├─ agent_langgrap.py
-├─ demo.py
-├─ tools_schema.txt
-├─ pyproject.toml
-├─ uv.lock
-└─ README.md
+├── Dockerfile
+├── .dockerignore
+├── user_management_agent/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── prompts.py
+│   ├── mcp.py
+│   ├── openai_agent.py
+│   ├── langgraph_agent.py
+│   ├── streamlit_app.py
+│   ├── cli_openai.py
+│   └── cli_langgraph.py
+├── app.py
+├── main.py
+├── agent_openai.py
+├── agent_langgrap.py
+├── demo.py
+├── tools_schema.txt
+├── pyproject.toml
+├── uv.lock
+└── README.md
 ```
 
 - `user_management_agent/` - main Python package
@@ -34,6 +36,8 @@ user-management-agent/
 - `agent_langgrap.py` - compatibility wrapper for the LangGraph agent module
 - `demo.py` - standalone OpenAI chat demo, separate from the MCP agent flow
 - `tools_schema.txt` - exported tool schema reference for the MCP server
+- `Dockerfile` - container image for the Streamlit app
+- `.dockerignore` - excludes local environment and build artifacts from Docker
 
 ## Features
 
@@ -74,6 +78,22 @@ Notes:
 - `MCP_SERVER_NAME` is optional and used for logging and the LangGraph MCP client
 - `MODEL` defaults to `gpt-4o-mini` if omitted
 - `MODEL_TEMPERATURE` defaults to `0.2`
+
+## Docker
+
+Build the container image:
+
+```bash
+docker build -t user-management-agent .
+```
+
+Run the Streamlit app in Docker:
+
+```bash
+docker run --rm -p 8501:8501 --env-file .env user-management-agent
+```
+
+The container starts Streamlit by default on `0.0.0.0:8501`. If you want to run a CLI entry point instead, override the command when starting the container.
 
 ## Run
 
@@ -122,6 +142,7 @@ The shared system prompt tells the agent to:
 - If you see `OPENAI_API_KEY environment variable is not set`, make sure your `.env` file is present and loaded.
 - If the agent cannot connect to tools, verify `MCP_SERVER_URL` is correct and reachable.
 - If Streamlit does not start, confirm `streamlit` is installed in the same environment created by `uv sync`.
+- If Docker cannot reach the app, make sure port `8501` is published and the container was started with `--env-file .env`.
 
 ## Example
 
