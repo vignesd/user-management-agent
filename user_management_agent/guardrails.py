@@ -70,9 +70,11 @@ agent = Agent(
 async def main() -> None:
     try:
         question = "Can you solve 2x + 3 = 11 for me?"
-        question = "Can you help to restart the laptop for me?"
+        # question = "Can you help to restart the laptop for me?"
         # question = "I want to share my personal information: My email is example@example.com"
-        await Runner.run(agent, question)
+        print("Question:", question)
+        response = await Runner.run(agent, question)
+        print("Response:", response.final_output)
         print("Request processed successfully.")
     except InputGuardrailTripwireTriggered:
         print("Guardrail blocked the request.")
